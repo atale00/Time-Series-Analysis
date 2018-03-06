@@ -1,0 +1,215 @@
+---
+title: "4550HW1"
+author: "Xinyi Liu"
+date: "February 12, 2018"
+output: html_document
+---
+
+Exercise 2
+1.
+```{r,echo=T}
+load("E:/STSCI4550/y.RData")
+ex2data=y
+```
+
+2. 
+part a
+```{r,echo=T}
+ex2ts <- ts(ex2data, frequency = 12, start = c(2008,1))
+```
+part b
+```{r,echo=T}
+ex2plot=ts.plot(ex2ts, main = "Frequency = 12")
+ex2plot
+```
+From the ts plot above, there is no clear trend indicated.
+
+part c
+```{r,echo=T}
+ex2sea <- ts(ex2data, frequency = 4, start = c(2008,1))
+
+seaplot=ts.plot(ex2sea, main = "Frequency = 4")
+seaplot
+monthplot(ex2ts)
+```
+There is no obvious seasonality observed from the plot. Seasonal data are randomly distributed around zero. 
+
+3.
+```{r,echo=T}
+library(CADFtest)
+max.lag<-round(sqrt(length(ex2ts)))
+CADFtest(ex2ts, type= "drift", criterion= "BIC", max.lag.y=max.lag) 
+```
+Because p-value=1.244e-06,we decide to rejectthe null hypothesis, the series does not have a stochastic trend, it is stable & stationary.
+
+4. 
+part a
+```{r,echo=T}
+acf(ex2ts) #MA(1)
+```
+From the correlogram, it is a MA(1) process.
+
+part b
+```{r,echo=T}
+fitma <- arima(ex2ts, order = c(0,0,1))
+fitma
+abs(fitma$coef/sqrt(diag(fitma$var.coef)))
+```
+From results above, the coefficient for the fitted model is 0.4721 and the intercept is -0.3860, since 6.366928 and  2.694825 are larger than 1.96, coefficients are significant. 
+
+part c
+```{r,echo=T}
+ts.plot(fitma$residuals)
+acf(fitma$residuals)
+Box.test(fitma$residuals, lag = max.lag, type = "Ljung-Box")
+
+```
+p-value=0.9441, not significant, so we do not reject null hypothesis, the model is validated, the residual series is a white noise.
+
+5.
+part a
+```{r,echo=T}
+pacf(ex2data) #AR(1)
+
+```
+Based on the correlogram,it is a AR(1) process
+
+part b
+```{r,echo=T}
+fitar <- arima(ex2ts, order = c(1,0,0))
+fitar
+abs(fitar$coef/sqrt(diag(fitar$var.coef)))
+```
+The coefficient of fitted model is 0.4722 , the intercept is -0.0799, both coefficients are significant since 5.911237 and 2.086681 are large enough.
+
+part c
+```{r,echo=T}
+ts.plot(fitar$residuals)
+acf(fitar$residuals)
+Box.test(fitar$residuals, lag = max.lag, type = "Ljung-Box")
+```
+Since p-value=0.9588, not significant, we do not reject null hypothesis, the model is validated and the residual series is a white noise.
+
+6.
+part a
+```{r,echo=T}
+AIC(fitma)
+AIC(fitar)
+
+```
+From the result, we see AIC for MA model > AIC for AR model, thus we prefer model AR(1).
+
+part b
+```{r,echo=T}
+BIC(fitma)
+BIC(fitar)
+```
+From the result, we see BIC for MA model> BIC for AR model, thus we prefer model AR(1).
+
+
+Exercise 3
+
+1.
+```{r,echo=T}
+ex3 <- read.table(file = file.choose(), header=TRUE)
+attach(ex3)
+```
+
+2.
+part a
+```{r,echo=T}
+ex3ts <- ts(log(PUNEW), frequency = 4, start = c(1989,1))
+```
+part b
+```{r,echo=T}
+ex3plot=ts.plot(ex3ts, main = "Frequency = 4")
+ex3plot
+```
+The time series has a clear trend from the plot.
+
+part c
+```{r,echo=T}
+max.lag1<-round(sqrt(length(ex3ts)))
+CADFtest(ex3ts, type= "trend", criterion= "BIC", max.lag.y=max.lag1)
+```
+Since p-value=0.4779, we failed to reject null hypothesis, the series is not stationary, it has a stochastic trend.
+
+part d
+```{r,echo=T}
+dlogts <- diff(ex3ts)
+ts.plot(dlogts)
+
+```
+
+part e
+```{r,echo=T}
+max.lag2<-round(sqrt(length(dlogts))) 
+CADFtest(dlogts, type= "drift", criterion= "BIC", max.lag.y=max.lag2) 
+
+```
+Since p-value=3.826e-06, we reject null hypothesis, there is no unit root, series is stationary. 
+
+3. 
+part a
+```{r,echo=T}
+acf(dlogts) #MA(3)
+```
+From the correlogram, we can see that it is a MA(3) process.
+
+part b
+```{r,echo=T}
+fitma1 <- arima(dlogts, order = c(0,0,3))
+fitma1
+abs(fitma1$coef/sqrt(diag(fitma1$var.coef)))
+```
+The coefficients of fitted model are 0.3696, 0.2031 and 0.4089, the intercept is 0.0072.
+The coefficient for ma2 isn't significant, ma1 and ma3 are significant.
+
+part c
+```{r,echo=T}
+ts.plot(fitma1$residuals)
+acf(fitma1$residuals)
+Box.test(fitma1$residuals, lag = max.lag2, type = "Ljung-Box")
+
+```
+Since p-value=0.9969, not significant, we do not reject null hypothesis, the model is validated, the residual series is a white noise.
+
+4.
+part a
+```{r,echo=T}
+pacf(dlogts) #AR(3)
+
+```
+From the correlogram above, we see that it is a AR(3) process.
+
+part b
+```{r,echo=T}
+fitar1 <- arima(dlogts, order = c(3,0,0))
+fitar1
+abs(fitar1$coef/sqrt(diag(fitar1$var.coef)))
+```
+The coefficients are 0.3079,0.0530 and 0.2983 respectively,and the coefficient for ar2 isn't significant, ar1 and ar3 are significant.
+
+part c
+```{r,echo=T}
+ts.plot(fitar1$residuals)
+acf(fitar1$residuals)
+Box.test(fitar1$residuals, lag = max.lag2, type = "Ljung-Box")
+```
+Since p-value=0.8696,not significant,  we failed to reject null hypothesis, the model is validated, the residual series is a white noise.
+
+5.
+part a
+```{r,echo=T}
+AIC(fitma1)
+AIC(fitar1)
+
+```
+Since AIC for MA model<AIC for AR model, we prefer MA(1) model.
+
+part b
+```{r,echo=T}
+BIC(fitma1)
+BIC(fitar1)
+```
+Since BIC for MA model<BIC for AR model, we prefer MA(1) model.
