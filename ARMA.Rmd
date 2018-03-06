@@ -1,9 +1,3 @@
----
-title: "4550HW1"
-author: "Xinyi Liu"
-date: "February 12, 2018"
-output: html_document
----
 
 Exercise 2
 1.
